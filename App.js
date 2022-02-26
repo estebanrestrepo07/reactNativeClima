@@ -1,101 +1,73 @@
-import React, { useEffect, useState }from 'react';
-import { StyleSheet, View, TouchableWithoutFeedback, Keyboard, Alert, Platform} from 'react-native';
-import Clima from './componente/Clima';
-import Formulario from './componente/Formulario';
+import React, {useState, useEffect} from 'react';
+import { StyleSheet, Text, View, Platform} from 'react-native';
+import Formulario from './componentes/Formulario';
+import Clima from './componentes/Clima';
 
 const App = () => {
   const [busqueda, guardarBusqueda] = useState({
-    ciudad: '',
+    ciudad:'',
     pais:'',
   })
 
+  const [consultar, guardarConsulta] = useState(false)
+  const [datos,guardarDatos] = useState('');
   const {ciudad, pais} = busqueda;
-
-  const [consultar, guardarConsultar] = useState(false);
-  const [datos, guardarDatos] = useState(false);
-  const [bgColor, guardarBgColor] = useState('lightblue');
 
   useEffect(()=>{
     const consultarClima = async () => {
-      if (consultar){
-        const apiKey = 'c62d1b64c7ff8a5b19a105e5293c498f'
-        const url = `http://api.openweathermap.org/data/2.5/weather?q=${ciudad},${pais}&appid=${apiKey}`
+      if (consultar) {
+        const apiKey = 'c62d1b64c7ff8a5b19a105e5293c498f';
+        const url = `http://api.openweathermap.org/data/2.5/weather?q=${ciudad},${pais}&appid=${apiKey}`;
         try {
-          console.log(url)
           const respuesta = await fetch(url);
           const data = await respuesta.json();
+
           if(data.cod === '404'){
-            mostrarAlerta()
-          } else {
-            guardarDatos(data);
-            guardarConsultar(false);
-
-            //modifica los colores de fondo basado en temperatura
-
-            const kelvin = 273.15;
-            const {main} = data;
-            const actual = main.temp - kelvin
-
-            if (actual < 10) {
-              guardarBgColor('lightgray')
-            } else if(actual >= 10 && actual < 25) {
-              guardarBgColor('lightblue')
-            } else{
-              guardarBgColor('lightcoral')
-            }
+            mostrarAlerta('No hay resultados, intenta otra ciudad o pais')
+          } else{
+            guardarDatos(data)
+            guardarConsulta(false)
           }
-        } catch (error) {
-          mostrarAlerta();
+        } catch  {
+          mostrarAlerta('No hay resultados, intenta otra ciudad o pais')
         }
-      } 
+      }
     }
-    consultarClima();
+    consultarClima()
   }, [consultar])
 
-  const mostrarAlerta = () => {
-    const mensajeAlerta = 'No hay resultados, por favor intenta con otra ciudad o pais';
-    if ( Platform.OS === 'web' ){
-      alert(mensajeAlerta);
+  const mostrarAlerta = (msg)=>{
+    if ( Platform.OS === 'web' ) {
+      alert(msg)
     }else{
-
-      Alert.alert('Error', mensajeAlerta, [{text: 'Entendido'}]);
+      Alert.alert('Error', msg, [{text: 'Entendido'}])
     }
   }
-  
-  const ocultarTeclado = () => {
-    Keyboard.dismiss()
-  }
 
-  const bgColorApp = {
-    backgroundColor: bgColor
-  }
   return (
-    <>
-      <TouchableWithoutFeedback onPress={ () => ocultarTeclado() }>
-        <View style={[styles.app, bgColorApp]}>
-          <View style={styles.contenido}>
-          <Clima resultado={datos} />
-          <Formulario
-            busqueda={busqueda}
-            guardarBusqueda={guardarBusqueda} 
-            guardarConsultar={guardarConsultar}
-            />
-          </View>
-        </View>
-      </TouchableWithoutFeedback>
-    </>
+    <View style={styles.app}>
+      <View style={styles.contenido}>
+        <Clima resultados={datos} />
+        <Formulario 
+          busqueda={busqueda} 
+          guardarBusqueda={guardarBusqueda} 
+          guardarConsulta={guardarConsulta}
+          mostrarAlerta={mostrarAlerta}/>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  app: {
+  app:{
     flex: 1,
     backgroundColor: 'lightblue',
     justifyContent: 'center'
   },
-  contenido: {
+  contenido:{
+    marginTop: 10,
     marginHorizontal: '2.5%'
   }
-})
+});
 
-export default App
+export default App;

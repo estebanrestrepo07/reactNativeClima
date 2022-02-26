@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "dojo-react",
-    "slug": "dojo-react",
+    "name": "dojo-Demo",
+    "slug": "dojo-Demo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
